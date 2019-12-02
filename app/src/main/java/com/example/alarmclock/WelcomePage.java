@@ -23,4 +23,11 @@ public class WelcomePage extends AppCompatActivity {
         startActivity(intent);
 
     }
+
+    public void jumpToTransportation(View view){
+
+        Intent intent = new Intent(getApplicationContext(), Transportation.class);
+        startActivity(intent);
+
+    }
 }
