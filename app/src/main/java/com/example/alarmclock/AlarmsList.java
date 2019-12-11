@@ -3,7 +3,11 @@ package com.example.alarmclock;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.PendingIntent;
 import android.app.TimePickerDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.DisplayMetrics;
 import android.view.View;
@@ -18,7 +22,11 @@ import java.util.ArrayList;
 import java.util.List;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.fragment.app.DialogFragment;
+
+import static android.app.Notification.EXTRA_NOTIFICATION_ID;
 
 /*
     For demo purposes, the only time that can be edited in the emulator is the alarm for Monday,
@@ -32,6 +40,9 @@ public class AlarmsList extends AppCompatActivity implements TimePickerDialog.On
     AlarmAdapter adapter;
     View editWindow;
     DialogFragment newFragment;
+    private final String CHANNEL_ID = "alarms";
+    private static NotificationManagerCompat notificationManager;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -133,5 +144,50 @@ public class AlarmsList extends AppCompatActivity implements TimePickerDialog.On
         else
             alarm.setAlpha(1);
     }
+
+    public void demoAlarm(View view) {
+        Intent intent = new Intent(this, AlertDetails.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent snoozeIntent = new Intent(this, AlarmReceiver.class);
+        snoozeIntent.putExtra(EXTRA_NOTIFICATION_ID, 0);
+        snoozeIntent.setAction("com.example.alarmnotifications.AlarmsList$AlarmReceiver");
+        PendingIntent snoozePendingIntent =
+                PendingIntent.getBroadcast(this, 0, snoozeIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        Intent stopIntent = new Intent(this, AlarmReceiver.class);
+        stopIntent.putExtra(EXTRA_NOTIFICATION_ID, 0);
+        stopIntent.setAction("com.example.alarmnotifications.AlarmsList$AlarmReceiver");
+        PendingIntent stopPendingIntent =
+                PendingIntent.getBroadcast(this, 0, stopIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Alarm")
+                .setContentText("Time to wake up!")
+                .setSmallIcon(R.drawable.ic_launcher)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setContentIntent(pendingIntent)
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+                .setAutoCancel(true)
+                .addAction(R.drawable.ic_launcher, "Snooze",
+                        snoozePendingIntent)
+                .addAction(R.drawable.ic_launcher, "Stop",
+                        stopPendingIntent);
+
+        notificationManager = NotificationManagerCompat.from(this);
+        notificationManager.notify(123, builder.build());
+    }
+
+    public static class AlarmReceiver extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            notificationManager.cancel(123);
+        }
+    }
+
+
+
 }
 

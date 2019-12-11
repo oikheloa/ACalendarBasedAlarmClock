@@ -23,10 +23,18 @@
         <ListView
             android:id="@+id/alarmListView"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="571dp"
             android:alpha="1">
 
         </ListView>
+
+        <Button
+            android:id="@+id/alarm"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="demoAlarm"
+            android:text="Demo alarm" />
+
     </LinearLayout>
 
     <androidx.cardview.widget.CardView
